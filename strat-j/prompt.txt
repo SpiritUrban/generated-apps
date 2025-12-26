@@ -1,0 +1,76 @@
+Ты — Codex. Создай полностью рабочий проект “STRAT-J” (личный стратегический журнал) с монорепой и готовым запуском.
+
+Цель: я хочу склонировать/создать папку, поставить зависимости и запустить локально, без ручной сборки по кускам.
+
+Требования:
+1) Монорепа:
+   strat-j/
+     package.json (workspace)
+     pnpm-workspace.yaml
+     packages/
+       contracts/
+       storage/
+       server/
+       client/
+
+2) Технологии:
+- TypeScript везде
+- packages/client: Vite + React + TS
+- packages/server: Node.js + Express + TS, CORS включен
+- packages/storage: SQLite через better-sqlite3 (синхронный), хранит файл БД в packages/storage/data/strat-j.sqlite
+- packages/contracts: типы DTO и runtime-валидация (можно zod) для CreateEntryInput и ListEntriesQuery
+
+3) Данные:
+EntryType: "LOG" | "DECISION" | "REVIEW"
+Entry поля (минимум):
+- id: string (uuid)
+- createdAt: string (ISO)
+- type: EntryType
+- text: string
+- tags: string[]
+- stateEnergy: number (0..5)
+- stateFocus: number (0..5)
+- stateTension: number (0..5)
+
+Хранение:
+- таблица entries: id TEXT PK, createdAt TEXT, type TEXT, text TEXT, tagsJson TEXT, stateEnergy INTEGER, stateFocus INTEGER, stateTension INTEGER
+- индексы по createdAt и type
+- для tags хранить JSON в tagsJson
+- при старте сервера обеспечить initDb(): создать папку data, создать таблицы если нет
+
+4) API (packages/server):
+- POST /api/entries
+  body = CreateEntryInput
+  response = { ok: true, entry: Entry }
+- GET /api/entries?from=&to=&q=&type=&tag=
+  from/to ISO optional; q — поиск по text LIKE; type фильтр; tag фильтр по tagsJson LIKE
+  response = { ok: true, items: Entry[] }
+- GET /api/tags
+  response = { ok: true, items: string[] } (уникальные теги из всех записей; можно извлекать простым проходом по entries и JSON.parse)
+
+5) Клиент (packages/client):
+Экранов 3:
+- Today: показывает записи за сегодня (локальная дата), кнопка “+ Add”
+- AddEntry: форма (type select, text textarea, tags input "tag1, tag2", 3 range 0..5), кнопки Save/Cancel
+- Search: строка поиска + фильтр по type + tag, список результатов
+
+Навигация: простой роутинг (react-router) или минимальный state router — выбери проще, но чтобы было удобно.
+
+UI без библиотек, простые стили (CSS) — чтобы выглядело аккуратно.
+
+6) Dev-режим:
+- Корень: scripts:
+  - pnpm dev запускает одновременно server и client
+  - pnpm build собирает оба
+- server dev на порту 8787 и слушает 0.0.0.0 (чтобы телефон в LAN видел)
+- client dev на 5173 и проксирует /api на http://localhost:8787 (vite proxy)
+
+7) Качество:
+- Всё должно запускаться сразу.
+- Дай итоговую структуру файлов и содержимое всех ключевых файлов.
+- Никаких “заглушек, которые не работают”.
+
+Выход:
+1) Список файлов (tree)
+2) Содержимое файлов (в код-блоках) для всех package.json/tsconfig/основных ts/tsx файлов и SQL init.
+3) Команды запуска и проверка (curl примеры для API).
