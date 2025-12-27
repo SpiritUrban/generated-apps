@@ -1,0 +1,47 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лист задач</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="backdrop">
+        <div class="shape shape-a"></div>
+        <div class="shape shape-b"></div>
+        <div class="shape shape-c"></div>
+    </div>
+
+    <main class="wrap">
+        <header class="hero">
+            <div>
+                <h1>Сегодня</h1>
+                <p class="subtitle">Сфокусируйся на главном</p>
+            </div>
+            <div class="pill" id="date-display">Дата</div>
+        </header>
+
+        <section class="composer">
+            <input type="text" id="todo-input" placeholder="Напиши задачу..." autocomplete="off">
+            <button id="add-btn">Добавить</button>
+        </section>
+
+        <section class="stats">
+            <span id="count-display">0 задач</span>
+            <button id="clear-done" class="ghost">Очистить выполненные</button>
+        </section>
+
+        <ul id="todo-list"></ul>
+
+        <div class="empty-state" id="empty-state">
+            Все чисто. Можно начать с маленькой победы.
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
