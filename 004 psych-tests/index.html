@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Визуальные психотесты</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="hero">
+        <div class="hero-title">Визуальные психотесты</div>
+        <p class="hero-subtitle">
+          Ненавязчивые визуальные задания. Тыкайте, тяните, наблюдайте — результат формируется из поведения.
+        </p>
+      </header>
+
+      <main class="screen" id="home">
+        <section class="grid">
+          <button class="card" data-start="plane">
+            <span class="card-title">Контроль x Риск</span>
+            <span class="card-text">Где тебе спокойнее находиться?</span>
+          </button>
+          <button class="card" data-start="orbit">
+            <span class="card-title">Движение и фокус</span>
+            <span class="card-text">За каким объектом хочется следить?</span>
+          </button>
+          <button class="card" data-start="comfort">
+            <span class="card-title">Зона комфорта</span>
+            <span class="card-text">Смести маркер туда, где напряжение минимально</span>
+          </button>
+        </section>
+        <div class="home-actions">
+          <button class="ghost" data-view="result">Показать результат</button>
+          <button class="ghost" data-reset>Сбросить данные</button>
+        </div>
+      </main>
+
+      <main class="screen hidden" id="test">
+        <div class="test-head">
+          <button class="ghost" data-view="home">Назад</button>
+          <div class="test-title" id="testTitle"></div>
+          <div class="test-hint" id="testHint"></div>
+        </div>
+        <div class="test-prompt" id="testPrompt"></div>
+        <div class="stage">
+          <canvas id="canvas"></canvas>
+          <div class="stage-hint" id="stageHint"></div>
+          <div class="progress" id="progress">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+        </div>
+      </main>
+
+      <main class="screen hidden" id="result">
+        <div class="result-grid">
+          <div class="panel">
+            <div class="panel-title">Профиль движения</div>
+            <svg class="radar" viewBox="0 0 320 320" id="radar"></svg>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Краткое описание</div>
+            <ul class="summary" id="summary"></ul>
+            <div class="metrics" id="metrics"></div>
+          </div>
+        </div>
+        <div class="home-actions">
+          <button class="ghost" data-view="home">Вернуться к тестам</button>
+          <button class="ghost" data-reset>Сбросить данные</button>
+        </div>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
