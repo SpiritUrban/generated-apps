@@ -11,8 +11,22 @@ const selectionPanel = document.querySelector<HTMLDivElement>("#selectionPanel")
 const buildUnitBtn = document.querySelector<HTMLButtonElement>("#buildUnitBtn");
 const buildExtractorBtn =
   document.querySelector<HTMLButtonElement>("#buildExtractorBtn");
+const upgradeAttackBtn =
+  document.querySelector<HTMLButtonElement>("#upgradeAttackBtn");
+const upgradeSpeedBtn =
+  document.querySelector<HTMLButtonElement>("#upgradeSpeedBtn");
+const upgradeArmorBtn =
+  document.querySelector<HTMLButtonElement>("#upgradeArmorBtn");
 
-if (!resourcePanel || !selectionPanel || !buildUnitBtn || !buildExtractorBtn) {
+if (
+  !resourcePanel ||
+  !selectionPanel ||
+  !buildUnitBtn ||
+  !buildExtractorBtn ||
+  !upgradeAttackBtn ||
+  !upgradeSpeedBtn ||
+  !upgradeArmorBtn
+) {
   throw new Error("HUD elements missing");
 }
 
@@ -20,7 +34,10 @@ const game = new Game(canvas, {
   resourcePanel,
   selectionPanel,
   buildUnitBtn,
-  buildExtractorBtn
+  buildExtractorBtn,
+  upgradeAttackBtn,
+  upgradeSpeedBtn,
+  upgradeArmorBtn
 });
 
 game.start();

@@ -50,6 +50,8 @@ body {
   display: flex;
   gap: 10px;
   pointer-events: auto;
+  flex-wrap: wrap;
+  max-width: 520px;
 }
 
 button {

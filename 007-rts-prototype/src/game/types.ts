@@ -5,6 +5,12 @@ export interface Vec2 {
   y: number;
 }
 
+export interface UnitUpgrades {
+  attack: number;
+  speed: number;
+  armor: number;
+}
+
 export const clamp = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
 

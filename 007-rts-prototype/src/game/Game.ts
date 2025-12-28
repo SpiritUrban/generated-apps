@@ -12,6 +12,9 @@ interface HUDRefs {
   selectionPanel: HTMLDivElement;
   buildUnitBtn: HTMLButtonElement;
   buildExtractorBtn: HTMLButtonElement;
+  upgradeAttackBtn: HTMLButtonElement;
+  upgradeSpeedBtn: HTMLButtonElement;
+  upgradeArmorBtn: HTMLButtonElement;
 }
 
 type BuildMode = "extractor" | "base" | null;
@@ -27,6 +30,8 @@ export class Game {
   private buildMode: BuildMode = null;
   private requestBuildUnit = false;
   private message: string | null = null;
+  private toastMessage: string | null = null;
+  private toastTimer = 0;
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -59,6 +64,24 @@ export class Game {
 
     this.hud.buildExtractorBtn.addEventListener("click", () => {
       this.buildMode = "extractor";
+    });
+
+    this.hud.upgradeAttackBtn.addEventListener("click", () => {
+      if (!this.world.applyUpgrade("player", "attack")) {
+        this.setToast("Not enough resources for attack upgrade.");
+      }
+    });
+
+    this.hud.upgradeSpeedBtn.addEventListener("click", () => {
+      if (!this.world.applyUpgrade("player", "speed")) {
+        this.setToast("Not enough resources for speed upgrade.");
+      }
+    });
+
+    this.hud.upgradeArmorBtn.addEventListener("click", () => {
+      if (!this.world.applyUpgrade("player", "armor")) {
+        this.setToast("Not enough resources for armor upgrade.");
+      }
     });
 
     window.addEventListener("keydown", (event) => {
@@ -98,23 +121,23 @@ export class Game {
     }
 
     const center = { x: this.world.width / 2, y: this.world.height / 2 };
-    for (let i = 0; i < 5; i += 1) {
+    for (let i = 0; i < 7; i += 1) {
       this.world.addResource(
         {
           x: center.x + (Math.random() - 0.5) * 260,
           y: center.y + (Math.random() - 0.5) * 200
         },
-        180
+        220
       );
     }
 
     this.world.addResource(
       { x: playerBasePos.x + 120, y: playerBasePos.y - 80 },
-      160
+      200
     );
     this.world.addResource(
       { x: enemyBasePos.x - 120, y: enemyBasePos.y + 80 },
-      160
+      200
     );
   }
 
@@ -138,6 +161,13 @@ export class Game {
       this.checkEndConditions();
     }
 
+    if (this.toastTimer > 0) {
+      this.toastTimer -= dt;
+      if (this.toastTimer <= 0) {
+        this.toastMessage = null;
+      }
+    }
+
     this.updateHUD();
     this.mouse.beginFrame();
   }
@@ -145,8 +175,12 @@ export class Game {
   private handleBuildRequests() {
     if (this.requestBuildUnit) {
       const base = this.world.getBase("player");
-      if (base && this.world.spendResources("player", 50)) {
+      if (!base) {
+        this.setToast("No base to produce units.");
+      } else if (this.world.spendResources("player", 50)) {
         base.enqueueUnit();
+      } else {
+        this.setToast("Not enough resources to build a unit.");
       }
       this.requestBuildUnit = false;
     }
@@ -207,6 +241,7 @@ export class Game {
   private tryPlaceBuilding(type: "extractor" | "base", position: Vec2, owner: "player") {
     const cost = type === "extractor" ? 100 : 200;
     if (!this.world.spendResources(owner, cost)) {
+      this.setToast("Not enough resources to place building.");
       return false;
     }
 
@@ -216,6 +251,7 @@ export class Game {
       const dy = building.position.y - position.y;
       if (Math.hypot(dx, dy) < building.size / 2 + size / 2 + 10) {
         this.world.addResources(owner, cost);
+        this.setToast("Too close to another building.");
         return false;
       }
     }
@@ -227,7 +263,17 @@ export class Game {
       position.y > this.world.height - size
     ) {
       this.world.addResources(owner, cost);
+      this.setToast("Cannot build outside the map.");
       return false;
+    }
+
+    if (type === "extractor") {
+      const resource = this.world.findNearestResource(position, 90);
+      if (!resource) {
+        this.world.addResources(owner, cost);
+        this.setToast("Extractor must be near resources.");
+        return false;
+      }
     }
 
     this.world.addBuilding(type, position, owner);
@@ -253,9 +299,15 @@ export class Game {
       const building = this.world.buildings.find(
         (item) => item.id === this.selection.selectedBuildingId
       );
-      this.hud.selectionPanel.textContent = building
-        ? `Selected: ${building.type}`
-        : "Selected: none";
+      if (building) {
+        const queueText =
+          building.type === "base" && building.queue > 0
+            ? ` | Queue: ${building.queue}`
+            : "";
+        this.hud.selectionPanel.textContent = `Selected: ${building.type}${queueText}`;
+      } else {
+        this.hud.selectionPanel.textContent = "Selected: none";
+      }
     } else {
       this.hud.selectionPanel.textContent = "Selected: none";
     }
@@ -263,11 +315,30 @@ export class Game {
     if (this.buildMode) {
       this.hud.selectionPanel.textContent += ` | Placing ${this.buildMode}`;
     }
+
+    const upgrades = this.world.playerUpgrades;
+    this.hud.upgradeAttackBtn.textContent = `Upgrade attack (${this.world.getUpgradeCost(
+      "player",
+      "attack"
+    )}) L${upgrades.attack}`;
+    this.hud.upgradeSpeedBtn.textContent = `Upgrade speed (${this.world.getUpgradeCost(
+      "player",
+      "speed"
+    )}) L${upgrades.speed}`;
+    this.hud.upgradeArmorBtn.textContent = `Upgrade armor (${this.world.getUpgradeCost(
+      "player",
+      "armor"
+    )}) L${upgrades.armor}`;
   }
 
   private render() {
     renderWorld(this.ctx, this.world);
     renderUnits(this.ctx, this.world, this.selection.selectedUnitIds);
-    renderUI(this.ctx, this.selection.rect, this.message);
+    renderUI(this.ctx, this.selection.rect, this.message, this.toastMessage, this.toastTimer);
+  }
+
+  private setToast(message: string) {
+    this.toastMessage = message;
+    this.toastTimer = 2.2;
   }
 }

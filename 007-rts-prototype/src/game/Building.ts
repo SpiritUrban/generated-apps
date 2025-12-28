@@ -39,6 +39,11 @@ export class Building {
 
   update(dt: number, world: World) {
     if (this.type === "base") {
+      this.gatherTimer += dt;
+      if (this.gatherTimer >= 2.5) {
+        this.gatherTimer = 0;
+        world.addResources(this.owner, 5);
+      }
       if (this.queue > 0) {
         this.buildTimer -= dt;
         if (this.buildTimer <= 0) {

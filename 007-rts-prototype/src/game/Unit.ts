@@ -1,4 +1,4 @@
-import type { Owner, Vec2 } from "./types";
+import type { Owner, UnitUpgrades, Vec2 } from "./types";
 import type { World } from "./World";
 import { clamp, distance } from "./types";
 
@@ -8,6 +8,7 @@ export class Unit {
   id: number;
   position: Vec2;
   hp: number;
+  maxHp: number;
   speed: number;
   attackRange: number;
   attackDamage: number;
@@ -20,15 +21,29 @@ export class Unit {
   targetResourceId: number | null;
   attackCooldown: number;
   gatherTimer: number;
+  baseMaxHp: number;
+  baseSpeed: number;
+  baseAttackRange: number;
+  baseAttackDamage: number;
 
-  constructor(id: number, position: Vec2, owner: Owner) {
+  constructor(
+    id: number,
+    position: Vec2,
+    owner: Owner,
+    upgrades: UnitUpgrades
+  ) {
     this.id = id;
     this.position = position;
     this.owner = owner;
-    this.hp = 100;
-    this.speed = 65;
-    this.attackRange = 40;
-    this.attackDamage = 12;
+    this.baseMaxHp = 100;
+    this.baseSpeed = 65;
+    this.baseAttackRange = 40;
+    this.baseAttackDamage = 12;
+    this.maxHp = this.baseMaxHp;
+    this.hp = this.baseMaxHp;
+    this.speed = this.baseSpeed;
+    this.attackRange = this.baseAttackRange;
+    this.attackDamage = this.baseAttackDamage;
     this.radius = 8;
     this.state = "idle";
     this.moveTarget = null;
@@ -37,6 +52,7 @@ export class Unit {
     this.targetResourceId = null;
     this.attackCooldown = 0;
     this.gatherTimer = 0;
+    this.applyUpgrades(upgrades);
   }
 
   setMoveTarget(target: Vec2) {
@@ -148,5 +164,15 @@ export class Unit {
       world.bounds.top + this.radius,
       world.bounds.bottom - this.radius
     );
+  }
+
+  applyUpgrades(upgrades: UnitUpgrades) {
+    const oldMax = this.maxHp;
+    this.attackDamage = this.baseAttackDamage + upgrades.attack * 4;
+    this.speed = this.baseSpeed + upgrades.speed * 6;
+    this.maxHp = this.baseMaxHp + upgrades.armor * 20;
+    if (this.hp < this.maxHp) {
+      this.hp = Math.min(this.maxHp, this.hp + (this.maxHp - oldMax));
+    }
   }
 }

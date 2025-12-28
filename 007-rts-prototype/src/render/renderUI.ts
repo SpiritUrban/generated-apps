@@ -3,7 +3,9 @@ import type { SelectionRect } from "../input/selection";
 export function renderUI(
   ctx: CanvasRenderingContext2D,
   rect: SelectionRect | null,
-  message: string | null
+  message: string | null,
+  toast: string | null,
+  toastTimer: number
 ) {
   if (rect) {
     ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
@@ -20,5 +22,15 @@ export function renderUI(
     ctx.font = "20px 'Trebuchet MS', sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(message, ctx.canvas.width / 2, 47);
+  }
+
+  if (toast) {
+    const alpha = Math.min(1, Math.max(0, toastTimer / 2.2));
+    ctx.fillStyle = `rgba(0, 0, 0, ${0.6 * alpha})`;
+    ctx.fillRect(ctx.canvas.width / 2 - 180, ctx.canvas.height - 70, 360, 36);
+    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+    ctx.font = "16px 'Trebuchet MS', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(toast, ctx.canvas.width / 2, ctx.canvas.height - 46);
   }
 }

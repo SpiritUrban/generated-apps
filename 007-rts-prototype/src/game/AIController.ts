@@ -1,5 +1,5 @@
 import type { World } from "./World";
-import type { Owner, Vec2 } from "./types";
+import type { Owner, UnitUpgrades, Vec2 } from "./types";
 
 type AIState = "scout" | "gather" | "attack";
 
@@ -7,18 +7,21 @@ export class AIController {
   state: AIState;
   stateTimer: number;
   waveTimer: number;
+  upgradeTimer: number;
   scoutTarget: Vec2 | null;
 
   constructor() {
     this.state = "scout";
     this.stateTimer = 0;
     this.waveTimer = 0;
+    this.upgradeTimer = 0;
     this.scoutTarget = null;
   }
 
   update(dt: number, world: World) {
     this.stateTimer += dt;
     this.waveTimer += dt;
+    this.upgradeTimer += dt;
 
     const enemyBase = world.getBase("enemy");
     if (!enemyBase) return;
@@ -36,7 +39,7 @@ export class AIController {
         scout.setMoveTarget(this.scoutTarget);
       }
 
-      if (this.stateTimer > 10) {
+      if (this.stateTimer > 14) {
         this.transition("gather");
       }
       return;
@@ -45,8 +48,9 @@ export class AIController {
     if (this.state === "gather") {
       this.ensureExtractor(world, enemyBase.position);
       this.ensureProduction(world, "enemy");
+      this.tryUpgrade(world);
 
-      if (this.stateTimer > 18 || world.enemyResources > 280) {
+      if (this.stateTimer > 24 || world.enemyResources > 320) {
         this.transition("attack");
       }
       return;
@@ -54,8 +58,9 @@ export class AIController {
 
     if (this.state === "attack") {
       this.ensureProduction(world, "enemy");
+      this.tryUpgrade(world);
 
-      if (this.waveTimer > 6) {
+      if (this.waveTimer > 10) {
         this.waveTimer = 0;
         this.sendWave(world);
       }
@@ -103,6 +108,26 @@ export class AIController {
     for (const unit of world.units) {
       if (unit.owner !== "enemy") continue;
       unit.setAttackTargetBuilding(playerBase.id);
+    }
+  }
+
+  private tryUpgrade(world: World) {
+    if (this.upgradeTimer < 6) return;
+    this.upgradeTimer = 0;
+
+    const upgradeOrder: Array<keyof UnitUpgrades> = [
+      "attack",
+      "armor",
+      "speed"
+    ];
+
+    for (const kind of upgradeOrder) {
+      if (world.enemyUpgrades[kind] >= 2) continue;
+      const cost = world.getUpgradeCost("enemy", kind);
+      if (world.enemyResources > cost + 60) {
+        world.applyUpgrade("enemy", kind);
+        break;
+      }
     }
   }
 }

@@ -1,7 +1,7 @@
 import { Building } from "./Building";
 import { ResourceNode } from "./Resource";
 import { Unit } from "./Unit";
-import type { Owner, Vec2 } from "./types";
+import type { Owner, UnitUpgrades, Vec2 } from "./types";
 import { distance } from "./types";
 
 export interface WorldBounds {
@@ -22,6 +22,8 @@ export class World {
   playerResources: number;
   enemyResources: number;
   bounds: WorldBounds;
+  playerUpgrades: UnitUpgrades;
+  enemyUpgrades: UnitUpgrades;
 
   constructor(width: number, height: number, tileSize: number) {
     this.width = width;
@@ -31,14 +33,16 @@ export class World {
     this.buildings = [];
     this.resources = [];
     this.nextId = 1;
-    this.playerResources = 200;
-    this.enemyResources = 200;
+    this.playerResources = 300;
+    this.enemyResources = 240;
     this.bounds = {
       left: 0,
       right: width,
       top: 0,
       bottom: height
     };
+    this.playerUpgrades = { attack: 0, speed: 0, armor: 0 };
+    this.enemyUpgrades = { attack: 0, speed: 0, armor: 0 };
   }
 
   addResources(owner: Owner, amount: number) {
@@ -72,7 +76,8 @@ export class World {
       x: position.x + offset,
       y: position.y + offset
     };
-    const unit = new Unit(this.nextId++, spawnPos, owner);
+    const upgrades = this.getUpgrades(owner);
+    const unit = new Unit(this.nextId++, spawnPos, owner, upgrades);
     this.units.push(unit);
     return unit;
   }
@@ -128,5 +133,29 @@ export class World {
 
     this.units = this.units.filter((unit) => unit.hp > 0);
     this.buildings = this.buildings.filter((building) => building.hp > 0);
+  }
+
+  getUpgrades(owner: Owner): UnitUpgrades {
+    return owner === "player" ? this.playerUpgrades : this.enemyUpgrades;
+  }
+
+  getUpgradeCost(owner: Owner, kind: keyof UnitUpgrades) {
+    const level = this.getUpgrades(owner)[kind];
+    return 120 + level * 80;
+  }
+
+  applyUpgrade(owner: Owner, kind: keyof UnitUpgrades): boolean {
+    const cost = this.getUpgradeCost(owner, kind);
+    if (!this.spendResources(owner, cost)) {
+      return false;
+    }
+    const upgrades = this.getUpgrades(owner);
+    upgrades[kind] += 1;
+    for (const unit of this.units) {
+      if (unit.owner === owner) {
+        unit.applyUpgrades(upgrades);
+      }
+    }
+    return true;
   }
 }

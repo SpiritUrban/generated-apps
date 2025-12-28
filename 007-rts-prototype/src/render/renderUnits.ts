@@ -26,7 +26,7 @@ export function renderUnits(
     ctx.fillRect(
       unit.position.x - 12,
       unit.position.y - 18,
-      24 * Math.max(0, unit.hp) / 100,
+      24 * Math.max(0, unit.hp) / unit.maxHp,
       3
     );
   }
