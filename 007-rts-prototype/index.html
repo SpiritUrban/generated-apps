@@ -1,0 +1,23 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>007 RTS Prototype</title>
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="gameCanvas"></canvas>
+      <div id="hud">
+        <div id="resourcePanel">Resources: 0</div>
+        <div id="selectionPanel">Selected: none</div>
+        <div id="actionPanel">
+          <button id="buildUnitBtn">Build unit (50)</button>
+          <button id="buildExtractorBtn">Build extractor (100)</button>
+        </div>
+        <div id="hintPanel">Right click: move/attack | Drag: select | B: build base (200)</div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
